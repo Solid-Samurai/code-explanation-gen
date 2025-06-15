@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Code Explainer</title>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-8">
+  <div class="max-w-2xl mx-auto bg-white p-6 rounded-xl shadow-md">
+    <h1 class="text-xl font-bold mb-4">Code Explanation Generator</h1>
+    <textarea id="codeInput" class="w-full border p-2 rounded" rows="8" placeholder="Paste your Python code here..."></textarea>
+    <button onclick="submitCode()" class="bg-blue-500 text-white px-4 py-2 rounded mt-4">Explain</button>
+    <pre id="result" class="mt-4 bg-gray-100 p-4 border rounded whitespace-pre-wrap"></pre>
+  </div>
+
+  <script>
+    async function submitCode() {
+      const code = document.getElementById("codeInput").value;
+      const result = document.getElementById("result");
+      result.textContent = "Processing...";
+      try {
+        const res = await axios.post("/analyze", { code });
+        result.textContent = `Explanation:\n${res.data.explanation}\n\nSuggestions:\n${res.data.suggestions.join('\n')}`;
+      } catch (err) {
+        result.textContent = "Error: " + (err.response?.data?.error || "Something went wrong");
+      }
+    }
+  </script>
+</body>
+</html>
