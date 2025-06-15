@@ -5,7 +5,7 @@ from flask import Blueprint, request, jsonify
 main = Blueprint("main", __name__)
 
 # Use a code generation model that returns plain English output
-HF_API_URL = "https://api-inference.huggingface.co/models/Salesforce/codegen-350M-mono"
+HF_API_URL = "https://api-inference.huggingface.co/models/bigcode/starcoder""
 HF_API_KEY = os.getenv("HF_API_KEY")
 
 @main.route("/analyze", methods=["POST"])
