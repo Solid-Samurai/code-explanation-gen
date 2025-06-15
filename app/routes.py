@@ -5,7 +5,7 @@ from flask import Blueprint, request, jsonify
 main = Blueprint("main", __name__)
 
 HF_API_KEY = os.getenv("HF_API_KEY")
-HF_API_URL = "https://api-inference.huggingface.co/models/microsoft/codebert-base"
+HF_API_URL = "https://api-inference.huggingface.co/models/Salesforce/codegen-350M-mono"
 
 @main.route("/analyze", methods=["POST"])
 def analyze_code():
@@ -34,10 +34,10 @@ def analyze_code():
         elif isinstance(response_data, dict) and "error" in response_data:
             explanation = f"Model Error: {response_data['error']}"
         else:
-            explanation = "Unexpected response format from Hugging Face"
+            explanation = f"Unexpected response format: {response_data}"
     except Exception as e:
-        print("Error parsing Hugging Face response:", str(e))
-        return jsonify({"error": "Failed to parse Hugging Face response"}), 500
+        explanation= f"Failed to parse response. Raw:{response.text}"
+        return jsonify({"error": explanation}), 500
 
     suggestions = []
     if "heap" in code.lower():
