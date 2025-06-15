@@ -4,8 +4,8 @@ from flask import Blueprint, request, jsonify
 
 main = Blueprint("main", __name__)
 
-# Use a code generation model that returns plain English output
-HF_API_URL = "https://api-inference.huggingface.co/models/tiiuae/falcon-7b-instruct"
+# ✅ Verified model that supports Hugging Face Inference API
+HF_API_URL = "https://api-inference.huggingface.co/models/google/flan-t5-base"
 HF_API_KEY = os.getenv("HF_API_KEY")
 
 @main.route("/analyze", methods=["POST"])
@@ -20,8 +20,13 @@ def analyze_code():
     headers = {
         "Authorization": f"Bearer {HF_API_KEY}"
     }
+
+    # ✅ Prompt format for instruction-tuned model
     payload = {
-        "inputs": code
+        "inputs": f"Explain what this Python code does:\n{code}",
+        "parameters": {
+            "max_new_tokens": 100
+        }
     }
 
     try:
@@ -54,10 +59,12 @@ def analyze_code():
         explanation = f"Failed to parse response. Raw: {response.text}"
         return jsonify({"error": explanation}), 500
 
-    # Rule-based optimization suggestions
+    # ✅ Rule-based suggestions
     suggestions = []
     if "heap" in code.lower():
         suggestions.append("Consider using Python's built-in `heapq` module.")
+    if "for" in code.lower() and "range" in code.lower():
+        suggestions.append("Consider using list comprehensions for cleaner loops if applicable.")
 
     return jsonify({
         "explanation": explanation,
