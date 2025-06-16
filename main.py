@@ -10,13 +10,13 @@ print("Loaded .env file")
 
 def create_app():
     print("Creating Flask app...")
-    app = Flask(_name_)
+    app = Flask(__name__)
     CORS(app)  
     app.register_blueprint(main)
     print("Flask app created and blueprint registered")
     return app
 
-if _name_ == "_main_":
+if __name__ == "__main__":
     print("Entering main block...")
     app = create_app()
     print("Starting Flask server...")
