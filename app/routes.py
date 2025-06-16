@@ -4,7 +4,7 @@ import os
 
 print("Loading routes.py...")
 
-main = Blueprint('main', _name_)
+main = Blueprint('main', __name__)
 
 # Hugging Face API setup
 API_TOKEN = os.getenv("HUGGING_FACE_API_TOKEN")
