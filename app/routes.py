@@ -21,7 +21,7 @@ def query_hugging_face(payload):
     except requests.exceptions.RequestException as e:
         return {"error": str(e)}
 
-@main.route('/explain', methods=['POST'])
+@main.route('/analyze', methods=['POST'])
 def explain_code():
     """API endpoint to explain code and suggest optimizations."""
     data = request.get_json()
