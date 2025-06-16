@@ -1,76 +1,57 @@
-import os
-import requests
 from flask import Blueprint, request, jsonify
+import requests
+import os
 
-main = Blueprint("main", __name__)
+print("Loading routes.py...")
 
-# ✅ Verified model that supports Hugging Face Inference API
-HF_API_URL = "https://api-inference.huggingface.co/models/google/flan-t5-base"
-HF_API_KEY = os.getenv("HF_API_KEY")
+main = Blueprint('main', _name_)
 
-@main.route("/analyze", methods=["POST"])
-def analyze_code():
-    data = request.get_json()
-    print("Incoming request data:", data)
+# Hugging Face API setup
+API_TOKEN = os.getenv("HUGGING_FACE_API_TOKEN")
+API_URL = "https://api-inference.huggingface.co/models/Salesforce/codet5-base"
+headers = {"Authorization": f"Bearer {API_TOKEN}"}
+print(f"API_TOKEN: {API_TOKEN if API_TOKEN else 'Not found'}")
 
-    code = data.get("code", "").strip()
-    if not code:
-        return jsonify({"error": "Empty input"}), 400
-
-    headers = {
-        "Authorization": f"Bearer {HF_API_KEY}"
-    }
-
-    # ✅ Prompt format for instruction-tuned model
-    payload = {
-        "inputs": f"Explain what this Python code does:\n{code}",
-        "parameters": {
-            "max_new_tokens": 100
-        }
-    }
-
+def query_hugging_face(payload):
+    """Send request to Hugging Face Inference API."""
     try:
-        response = requests.post(HF_API_URL, headers=headers, json=payload)
-        print("Hugging Face raw response:", response.text)
+        response = requests.post(API_URL, headers=headers, json=payload)
         response.raise_for_status()
-    except requests.exceptions.HTTPError as e:
-        print("HTTPError:", e)
-        print("Status Code:", response.status_code)
-        print("Response Text:", response.text)
-        return jsonify({
-            "error": f"HTTPError {response.status_code}: {response.text}"
-        }), 500
-    except Exception as e:
-        print("Other error calling Hugging Face API:", str(e))
-        return jsonify({
-            "error": "Hugging Face API call failed"
-        }), 500
+        return response.json()
+    except requests.exceptions.RequestException as e:
+        return {"error": str(e)}
 
-    try:
-        response_data = response.json()
-        if isinstance(response_data, list) and len(response_data) > 0:
-            explanation = response_data[0].get("generated_text", "No explanation found")
-        elif isinstance(response_data, dict) and "error" in response_data:
-            explanation = f"Model Error: {response_data['error']}"
-        else:
-            explanation = f"Unexpected response format: {response_data}"
-    except Exception as e:
-        print("Error parsing HF response:", str(e))
-        explanation = f"Failed to parse response. Raw: {response.text}"
-        return jsonify({"error": explanation}), 500
-
-    # ✅ Rule-based suggestions
+@main.route('/explain', methods=['POST'])
+def explain_code():
+    """API endpoint to explain code and suggest optimizations."""
+    data = request.get_json()
+    code_snippet = data.get('code', '')
+    
+    if not code_snippet.strip():
+        return jsonify({"error": "No code provided"}), 400
+    
+    # Generate explanation using Hugging Face
+    prompt = f"Explain the following Python code in plain English:\n\n{code_snippet}"
+    payload = {"inputs": prompt, "parameters": {"max_length": 512}}
+    result = query_hugging_face(payload)
+    
+    if isinstance(result, dict) and "error" in result:
+        return jsonify({"error": result["error"]}), 500
+    
+    explanation = result[0]["generated_text"] if result else "No explanation generated."
+    
+    # Suggest optimizations (rule-based)
     suggestions = []
-    if "heap" in code.lower():
-        suggestions.append("Consider using Python's built-in `heapq` module.")
-    if "for" in code.lower() and "range" in code.lower():
-        suggestions.append("Consider using list comprehensions for cleaner loops if applicable.")
-
+    if "class Heap" in code_snippet or "heapify" in code_snippet.lower():
+        suggestions.append("Consider using Python's heapq module for a more efficient and tested heap implementation.")
+    if "def sort" in code_snippet or "bubble" in code_snippet.lower():
+        suggestions.append("Replace custom sorting with Python's sorted() or list.sort() for better performance.")
+    if "class " in code_snippet and "def _init_" in code_snippet:
+        suggestions.append("Ensure proper encapsulation using private attributes (e.g., _variable) and consider design patterns like Singleton if applicable.")
+    if not suggestions:
+        suggestions = ["No specific optimizations detected. Ensure code follows best practices."]
+    
     return jsonify({
         "explanation": explanation,
-        "suggestions": suggestions
+        "optimizations": suggestions
     })
-
-@main.route("/", methods=["GET"])
-def home():
-    return "Backend is running!"

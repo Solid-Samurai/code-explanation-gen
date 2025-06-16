@@ -1,1 +1,15 @@
-".env" 
+# Python
+_pycache_/
+*.pyc
+*.pyo
+
+# Environment
+.env
+*.env
+
+# IDE
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
