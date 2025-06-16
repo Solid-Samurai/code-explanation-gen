@@ -13,3 +13,4 @@ _pycache_/
 
 # OS files
 .DS_Store".env" 
+.env 
