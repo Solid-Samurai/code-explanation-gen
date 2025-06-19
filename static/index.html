@@ -20,7 +20,11 @@
       const result = document.getElementById("result");
       result.textContent = "Processing...";
       try {
+
+        const res = await axios.post("http://localhost:5000/analyze", { code });
+=======
         const res = await axios.post("https://code-explanation-gen.onrender.com/analyze", { code });
+
         result.textContent = `Explanation:\n${res.data.explanation}\n\nSuggestions:\n${res.data.suggestions.join('\n')}`;
       } catch (err) {
         result.textContent = "Error: " + (err.response?.data?.error || "Something went wrong");
