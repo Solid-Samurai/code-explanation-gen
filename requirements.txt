@@ -1,7 +1,7 @@
 flask
 flask-cors
-transformers
-torch
+requests
 gunicorn==23.0.0
+
 
 
