@@ -38,7 +38,7 @@ from flask import Blueprint, request, jsonify
 
 main = Blueprint("main", __name__)
 
-# ✅ Verified model that supports Hugging Face Inference API
+
 HF_API_URL = "https://api-inference.huggingface.co/models/google/flan-t5-base"
 HF_API_KEY = os.getenv("HF_API_KEY")
 
@@ -55,7 +55,7 @@ def analyze_code():
         "Authorization": f"Bearer {HF_API_KEY}"
     }
 
-    # ✅ Prompt format for instruction-tuned model
+   
     payload = {
         "inputs": f"Explain what this Python code does:\n{code}",
         "parameters": {
@@ -93,7 +93,6 @@ def analyze_code():
         explanation = f"Failed to parse response. Raw: {response.text}"
         return jsonify({"error": explanation}), 500
 
-    # ✅ Rule-based suggestions
     suggestions = []
     if "heap" in code.lower():
         suggestions.append("Consider using Python's built-in `heapq` module.")
